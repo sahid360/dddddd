@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Mod - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary-color: #6a0dad; /* Purple */
+            --secondary-color: #4a007c; /* Darker Purple */
+            --accent-color: #00bcd4; /* Cyan/Light Blue */
+            --background-dark: #1a1a2e;
+            --background-light-dark: #272740;
+            --text-color: #e0e0e0;
+            --text-light: #f0f0f0;
+            --border-color: #3a3a5a;
+            --card-background: #2c2c4a;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-dark);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 250px;
+            background-color: var(--secondary-color);
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: fixed; /* Keep sidebar fixed */
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 999; /* Ensure it's above other content */
+            transform: translateX(-100%); /* Hidden by default on mobile */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar.active {
+            transform: translateX(0); /* Show sidebar */
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar-header h2 {
+            color: var(--text-light);
+            margin: 0;
+            font-size: 1.8em;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .sidebar ul li {
+            margin-bottom: 15px;
+        }
+
+        .sidebar ul li a {
+            color: var(--text-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-weight: 500;
+        }
+
+        .sidebar ul li a i {
+            margin-right: 15px;
+            font-size: 1.2em;
+        }
+
+        .sidebar ul li a:hover,
+        .sidebar ul li a.active {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            margin-left: 0; /* Default to 0, adjusted by JS on desktop and when sidebar is active */
+            transition: margin-left 0.3s ease-in-out;
+        }
+        
+        /* Overlay for mobile sidebar */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+        }
+        .overlay.active {
+            display: block;
+        }
+
+        /* Header (Admin specific - simpler) */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            background-color: var(--background-light-dark);
+            padding: 15px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative; /* For menu toggle */
+        }
+
+        .header .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header .logo img {
+            height: 40px;
+            margin-right: 15px;
+        }
+
+        .header .logo h1 {
+            color: var(--text-light);
+            font-size: 1.8em;
+            margin: 0;
+        }
+
+        .header .user-info {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .header .user-info i {
+            margin-right: 10px;
+            font-size: 1.3em;
+            color: var(--accent-color);
+        }
+
+        /* Hamburger menu button */
+        .menu-toggle {
+            display: none; /* Hidden by default on desktop */
+            font-size: 1.5em;
+            color: var(--text-light);
+            cursor: pointer;
+            position: absolute; /* Position relative to header */
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            z-index: 1000; /* Above sidebar */
+        }
+        
+        /* Dashboard Sections (Cards) */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Single column for forms initially */
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-grow: 1;
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card h3 {
+            color: var(--text-light);
+            font-size: 1.6em;
+            margin-top: 0;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        .form-group input[type="url"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--background-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 1em;
+            box-sizing: border-box; /* padding and border included in width */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(106, 13, 173, 0.3); /* primary-color with opacity */
+            outline: none;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-message {
+            margin-top: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-align: center;
+            display: none; /* Hide by default */
+        }
+
+        .form-message.success {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: var(--success-color);
+        }
+
+        .form-message.error {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: var(--danger-color);
+        }
+
+        /* Admin App Management List */
+        .app-management-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .app-management-list.empty-message {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100px;
+            font-size: 1.1em;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+
+        .manage-app-card {
+            background-color: var(--background-light-dark);
+            border-radius: 10px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .manage-app-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .manage-app-card .app-info {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .manage-app-card .app-logo {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-right: 15px;
+            background-color: var(--background-dark);
+            padding: 5px;
+        }
+
+        .manage-app-card .app-details h4 {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 1.2em;
+        }
+
+        .manage-app-card .app-details p {
+            margin: 5px 0 0 0;
+            font-size: 0.85em;
+            color: var(--text-color);
+            opacity: 0.8;
+            max-width: 300px; /* Limit description width */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .manage-app-card .app-actions {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0; /* Prevent buttons from shrinking */
+        }
+
+        /* Login Page Specific Styling */
+        .login-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .login-card {
+            background-color: var(--card-background);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .login-card h2 {
+            color: var(--text-light);
+            font-size: 2em;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--background-light-dark);
+            padding: 20px 30px;
+            text-align: center;
+            color: var(--text-color);
+            border-top: 1px solid var(--border-color);
+            margin-top: auto; /* Push footer to the bottom */
+            border-radius: 12px;
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .footer .firebase-logo {
+            height: 20px;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+
+        /* Button Designs */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            white-space: nowrap; /* Prevent button text from wrapping */
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.85em;
+        }
+
+        .btn-block {
+            width: 100%;
+            display: flex;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--background-light-dark);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--border-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: var(--background-dark); /* Dark text for contrast */
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3);
+        }
+
+        /* Modal for Editing */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-background);
+            margin: auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .close-button {
+            color: var(--text-color);
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: var(--danger-color);
+            text-decoration: none;
+        }
+
+        .modal-content h3 {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 200px;
+                padding: 15px;
+            }
+            .sidebar ul li a {
+                padding: 10px 12px;
+            }
+            .sidebar ul li a i {
+                margin-right: 10px;
+            }
+            .header .logo h1 {
+                font-size: 1.5em;
+            }
+            /* main-content margin will be handled by JS for desktop view */
+            .dashboard-grid {
+                gap: 20px;
+            }
+            .card {
+                padding: 25px;
+            }
+            .card h3 {
+                font-size: 1.4em;
+            }
+            .manage-app-card .app-details p {
+                max-width: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block; /* Show hamburger on mobile */
+            }
+
+            .sidebar {
+                width: 250px; /* Full width or specific width for mobile sidebar */
+                padding: 20px;
+                box-shadow: 5px 0 15px rgba(0, 0, 0, 0.4);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .sidebar:not(.active) {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0; /* No offset when sidebar is hidden on mobile */
+                padding: 20px 15px;
+            }
+            .header {
+                flex-direction: row; /* Keep row for menu and logo on mobile */
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 20px;
+                margin-bottom: 30px;
+            }
+            .header .logo {
+                margin-bottom: 0; /* Reset margin */
+                margin-left: 40px; /* Offset for menu toggle */
+            }
+            .header .user-info {
+                margin-top: 0; /* Reset margin */
+                width: auto;
+            }
+            .login-card {
+                padding: 30px;
+                max-width: 90%;
+            }
+            .manage-app-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .manage-app-card .app-info {
+                width: 100%;
+            }
+            .manage-app-card .app-details {
+                margin-bottom: 10px;
+            }
+            .manage-app-card .app-details p {
+                max-width: none;
+            }
+            .manage-app-card .app-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            .btn {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+            .modal-content {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 100%; /* Sidebar takes full width on very small screens */
+                border-right: none;
+            }
+            .sidebar ul li {
+                margin: 0 0 10px 0;
+            }
+            .sidebar ul li a {
+                justify-content: center;
+            }
+            .header .logo h1 {
+                font-size: 1.3em;
+            }
+            .card {
+                padding: 20px;
+            }
+            .card h3 {
+                font-size: 1.2em;
+            }
+            .login-card h2 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="login-screen" class="login-page">
+        <div class="login-card">
+            <h2>Admin Login</h2>
+            <form id="admin-login-form">
+                <div class="form-group">
+                    <label for="login-email"><i class="fas fa-envelope"></i> Email:</label>
+                    <input type="email" id="login-email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password"><i class="fas fa-lock"></i> Password:</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-sign-in-alt"></i> Login</button>
+                <div id="login-message" class="form-message error"></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-dashboard" class="container" style="display: none;">
+        <!-- Hamburger menu for mobile -->
+        <div class="menu-toggle" id="admin-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="admin-sidebar">
+            <div class="sidebar-header">
+                <h2>Admin Panel</h2>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active" data-section="add-app"><i class="fas fa-plus-circle"></i> Add New App</a></li>
+                    <li><a href="#" data-section="manage-apps"><i class="fas fa-tasks"></i> Manage Apps</a></li>
+                    <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Overlay for mobile sidebar -->
+        <div class="overlay" id="admin-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content" id="admin-main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="logo">
+                    <img src="cat-mod-logo.png" onerror="this.onerror=null;this.src='https://via.placeholder.com/40/6a0dad/ffffff?text=CM';" alt="Cat Mod Logo"> <!-- Place your logo file here -->
+                    <h1>Cat Mod Admin</h1>
+                </div>
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i> <span id="admin-user-email">admin@example.com</span>
+                </div>
+            </header>
+
+            <!-- Dashboard Sections -->
+            <section class="dashboard-grid">
+                <!-- Add New App Form -->
+                <div id="add-app-section" class="card">
+                    <h3><i class="fas fa-plus-circle"></i> Add New App</h3>
+                    <form id="add-app-form">
+                        <div class="form-group">
+                            <label for="appName">App Name:</label>
+                            <input type="text" id="appName" placeholder="Enter app name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="appDescription">Short Description:</label>
+                            <textarea id="appDescription" placeholder="Enter a short description of the app" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="appCategory">Category:</label>
+                            <select id="appCategory" required>
+                                <option value="">Select a Category</option>
+                                <option value="Tools">Tools</option>
+                                <option value="Games">Games</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Utilities">Utilities</option>
+                                <option value="Education">Education</option>
+                                <!-- Add more categories as needed -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="appLogoUrl">Logo URL:</label>
+                            <input type="url" id="appLogoUrl" placeholder="Enter logo image URL (e.g., https://example.com/logo.png)" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="appDownloadUrl">Download URL:</label>
+                            <input type="url" id="appDownloadUrl" placeholder="Enter app download URL (e.g., https://example.com/app.apk)" required>
+                        </div>
+                        <button type="submit" class="btn btn-success"><i class="fas fa-plus"></i> Add App</button>
+                        <div id="add-app-message" class="form-message"></div>
+                    </form>
+                </div>
+
+                <!-- Manage Apps List -->
+                <div id="manage-apps-section" class="card" style="display: none;">
+                    <h3><i class="fas fa-tasks"></i> Manage Apps</h3>
+                    <div class="app-management-list" id="app-list">
+                        <p class="empty-message" id="app-list-loading-message">Loading apps...</p>
+                        <!-- Apps will be dynamically loaded here from Firebase -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <p>&copy; 2023 Cat Mod Admin. All rights reserved. Powered by Firebase <img src="https://www.gstatic.com/devrel-devsite/prod/vc3d1667b43a94cf48f86f44d51a66e60975e5b321c170d10d635c024d271f65d/firebase/images/touchicon-180.png" alt="Firebase Logo" class="firebase-logo"></p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Edit App Modal -->
+    <div id="editAppModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3>Edit App</h3>
+            <form id="edit-app-form">
+                <input type="hidden" id="editAppId">
+                <div class="form-group">
+                    <label for="editAppName">App Name:</label>
+                    <input type="text" id="editAppName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editAppDescription">Short Description:</label>
+                    <textarea id="editAppDescription" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editAppCategory">Category:</label>
+                    <select id="editAppCategory" required>
+                        <option value="Tools">Tools</option>
+                        <option value="Games">Games</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Education">Education</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editAppLogoUrl">Logo URL:</label>
+                    <input type="url" id="editAppLogoUrl" required>
+                </div>
+                <div class="form-group">
+                    <label for="editAppDownloadUrl">Download URL:</label>
+                    <input type="url" id="editAppDownloadUrl" required>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                <div id="edit-app-message" class="form-message"></div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBOF9MywuavGgXCkm3ktWNaEU3j7ZfycU4",
+            authDomain: "test-9c2fe.firebaseapp.com",
+            databaseURL: "https://test-9c2fe-default-rtdb.firebaseio.com",
+            projectId: "test-9c2fe",
+            storageBucket: "test-9c2fe.firebasestorage.app",
+            messagingSenderId: "940783022173",
+            appId: "1:940783022173:web:72826d42d138be8a219db4"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+        const appsRef = database.ref('apps');
+
+        // Authorized Admin UID - **IMPORTANT: Replace with your actual Firebase Admin User UID**
+        const ADMIN_UID = "ypVaPoPt6LMKW9ZEo6KrdFV6DNR2"; 
+
+        const loginScreen = document.getElementById('login-screen');
+        const adminDashboard = document.getElementById('admin-dashboard');
+        const loginForm = document.getElementById('admin-login-form');
+        const loginMessage = document.getElementById('login-message');
+        const addAppForm = document.getElementById('add-app-form');
+        const addAppMessage = document.getElementById('add-app-message');
+        const appList = document.getElementById('app-list');
+        const logoutBtn = document.getElementById('logout-btn');
+        const adminUserEmailSpan = document.getElementById('admin-user-email');
+        const appListLoadingMessage = document.getElementById('app-list-loading-message');
+        const adminMainContent = document.getElementById('admin-main-content'); // Get main content
+
+        // Modal elements
+        const editAppModal = document.getElementById('editAppModal');
+        const closeButton = document.querySelector('.close-button');
+        const editAppForm = document.getElementById('edit-app-form');
+        const editAppIdInput = document.getElementById('editAppId');
+        const editAppNameInput = document.getElementById('editAppName');
+        const editAppDescriptionInput = document.getElementById('editAppDescription');
+        const editAppCategorySelect = document.getElementById('editAppCategory');
+        const editAppLogoUrlInput = document.getElementById('editAppLogoUrl');
+        const editAppDownloadUrlInput = document.getElementById('editAppDownloadUrl');
+        const editAppMessage = document.getElementById('edit-app-message');
+
+        // Sidebar elements
+        const adminMenuToggle = document.getElementById('admin-menu-toggle');
+        const adminSidebar = document.getElementById('admin-sidebar');
+        const adminOverlay = document.getElementById('admin-overlay');
+
+        // Function to show/hide sidebar
+        function toggleAdminSidebar() {
+            adminSidebar.classList.toggle('active');
+            adminOverlay.classList.toggle('active');
+            // Adjust main content margin only on desktop (window.innerWidth > 768)
+            if (window.innerWidth > 768) {
+                if (adminSidebar.classList.contains('active')) {
+                    adminMainContent.style.marginLeft = '250px';
+                } else {
+                    adminMainContent.style.marginLeft = '0';
+                }
+            } else {
+                adminMainContent.style.marginLeft = '0'; // Always 0 on mobile
+            }
+        }
+
+        adminMenuToggle.addEventListener('click', toggleAdminSidebar);
+        adminOverlay.addEventListener('click', toggleAdminSidebar); // Close sidebar when clicking overlay
+
+        // Function to check login status
+        function checkLoginStatus() {
+            auth.onAuthStateChanged(user => {
+                if (user && user.uid === ADMIN_UID) {
+                    loginScreen.style.display = 'none';
+                    adminDashboard.style.display = 'flex';
+                    adminUserEmailSpan.textContent = user.email;
+                    loadAppsForAdmin(); // Load apps for admin after login
+                    // Set active tab to 'Add New App' by default
+                    document.querySelector('.sidebar ul li a[data-section="add-app"]').click();
+                    
+                    // Set sidebar active/inactive based on screen size
+                    if (window.innerWidth > 768) {
+                         adminSidebar.classList.add('active');
+                         adminMainContent.style.marginLeft = '250px';
+                    } else {
+                        adminSidebar.classList.remove('active');
+                        adminMainContent.style.marginLeft = '0';
+                    }
+                } else {
+                    loginScreen.style.display = 'flex';
+                    adminDashboard.style.display = 'none';
+                }
+            });
+        }
+
+        // Login form submit handler
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                if (userCredential.user.uid === ADMIN_UID) {
+                    loginMessage.style.display = 'none';
+                    // Successful login, checkLoginStatus will show dashboard
+                } else {
+                    await auth.signOut(); // Logout if not the authorized admin
+                    showMessage(loginMessage, 'This user is not authorized as an admin.', 'error');
+                }
+            } catch (error) {
+                showMessage(loginMessage, `Login failed: ${error.message}`, 'error');
+            }
+        });
+
+        // Logout handler
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await auth.signOut();
+                console.log("Admin logged out.");
+            } catch (error) {
+                console.error("Logout failed:", error);
+            }
+        });
+
+        // Add New App form submit handler
+        addAppForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const appName = document.getElementById('appName').value;
+            const appDescription = document.getElementById('appDescription').value;
+            const appCategory = document.getElementById('appCategory').value;
+            const appLogoUrl = document.getElementById('appLogoUrl').value;
+            const appDownloadUrl = document.getElementById('appDownloadUrl').value;
+
+            if (!appName || !appDescription || !appCategory || !appLogoUrl || !appDownloadUrl) {
+                showMessage(addAppMessage, 'Please fill in all fields.', 'error');
+                return;
+            }
+
+            try {
+                await appsRef.push({
+                    name: appName,
+                    description: appDescription,
+                    category: appCategory,
+                    logoUrl: appLogoUrl,
+                    downloadUrl: appDownloadUrl,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                showMessage(addAppMessage, 'App added successfully!', 'success');
+                addAppForm.reset();
+                // loadAppsForAdmin() will automatically refresh due to .on('value')
+            } catch (error) {
+                showMessage(addAppMessage, `Failed to add app: ${error.message}`, 'error');
+            }
+        });
+
+        // Function to load and display apps for admin management
+        function loadAppsForAdmin() {
+            appListLoadingMessage.style.display = 'block'; // Show loading message
+            appList.innerHTML = ''; // Clear previous apps
+
+            appsRef.on('value', (snapshot) => {
+                const apps = snapshot.val();
+                if (!apps) {
+                    appList.innerHTML = '<p class="empty-message">No apps available yet. Add one!</p>';
+                    appListLoadingMessage.style.display = 'none';
+                    return;
+                }
+
+                appList.innerHTML = ''; // Clear if apps are present
+                for (let id in apps) {
+                    const app = apps[id];
+                    const appCard = `
+                        <div class="manage-app-card" data-app-id="${id}">
+                            <div class="app-info">
+                                <img src="${app.logoUrl}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50/cccccc/333333?text=App';" alt="${app.name} Logo" class="app-logo">
+                                <div class="app-details">
+                                    <h4>${app.name} (${app.category})</h4>
+                                    <p>${app.description}</p>
+                                </div>
+                            </div>
+                            <div class="app-actions">
+                                <button class="btn btn-warning btn-sm edit-btn" data-app-id="${id}"><i class="fas fa-edit"></i> Edit</button>
+                                <button class="btn btn-danger btn-sm delete-btn" data-app-id="${id}"><i class="fas fa-trash-alt"></i> Delete</button>
+                            </div>
+                        </div>
+                    `;
+                    appList.innerHTML += appCard;
+                }
+                appListLoadingMessage.style.display = 'none'; // Hide loading message
+            });
+        }
+
+        // Edit and Delete button event listener (using event delegation)
+        appList.addEventListener('click', (e) => {
+            const target = e.target;
+            // Find the closest button or the target itself that has a data-app-id
+            const appId = target.dataset.appId || target.closest('button')?.dataset.appId;
+
+            if (!appId) return;
+
+            if (target.classList.contains('delete-btn') || target.closest('.delete-btn')) {
+                if (confirm('Are you sure you want to delete this app?')) {
+                    deleteApp(appId);
+                }
+            } else if (target.classList.contains('edit-btn') || target.closest('.edit-btn')) {
+                openEditModal(appId);
+            }
+        });
+
+        async function deleteApp(appId) {
+            try {
+                await appsRef.child(appId).remove();
+                // The 'addAppMessage' is a bit misused here; ideally, you'd have a specific message area for app list actions.
+                // For now, it works, but consider a dedicated element for manage app messages.
+                showMessage(addAppMessage, 'App deleted successfully!', 'success'); 
+                // loadAppsForAdmin() automatically refreshes
+            } catch (error) {
+                showMessage(addAppMessage, `Failed to delete app: ${error.message}`, 'error');
+            }
+        }
+
+        // Open Edit Modal
+        async function openEditModal(appId) {
+            try {
+                const snapshot = await appsRef.child(appId).once('value');
+                const app = snapshot.val();
+
+                if (app) {
+                    editAppIdInput.value = appId;
+                    editAppNameInput.value = app.name;
+                    editAppDescriptionInput.value = app.description;
+                    editAppCategorySelect.value = app.category;
+                    editAppLogoUrlInput.value = app.logoUrl;
+                    editAppDownloadUrlInput.value = app.downloadUrl;
+                    editAppMessage.style.display = 'none'; // Clear previous messages
+                    editAppModal.style.display = 'flex'; // Show modal
+                } else {
+                    showMessage(addAppMessage, 'App not found for editing.', 'error');
+                }
+            } catch (error) {
+                showMessage(addAppMessage, `Failed to load app for editing: ${error.message}`, 'error');
+            }
+        }
+
+        // Close Modal
+        closeButton.addEventListener('click', () => {
+            editAppModal.style.display = 'none';
+        });
+
+        // Close modal if clicked outside
+        window.addEventListener('click', (event) => {
+            if (event.target === editAppModal) {
+                editAppModal.style.display = 'none';
+            }
+        });
+
+        // Save changes from Edit Modal
+        editAppForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const appId = editAppIdInput.value;
+            const updatedApp = {
+                name: editAppNameInput.value,
+                description: editAppDescriptionInput.value,
+                category: editAppCategorySelect.value,
+                logoUrl: editAppLogoUrlInput.value,
+                downloadUrl: editAppDownloadUrlInput.value
+            };
+
+            try {
+                await appsRef.child(appId).update(updatedApp);
+                showMessage(editAppMessage, 'App updated successfully!', 'success');
+                editAppModal.style.display = 'none'; // Close modal on success
+                // loadAppsForAdmin() automatically refreshes
+            } catch (error) {
+                showMessage(editAppMessage, `Failed to update app: ${error.message}`, 'error');
+            }
+        });
+
+
+        // Utility function to show messages
+        function showMessage(element, message, type) {
+            element.textContent = message;
+            element.className = `form-message ${type}`;
+            element.style.display = 'block';
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000); // Hide message after 5 seconds
+        }
+
+        // Sidebar navigation section switching
+        const navLinks = document.querySelectorAll('.sidebar ul li a');
+        const addAppSection = document.getElementById('add-app-section');
+        const manageAppsSection = document.getElementById('manage-apps-section');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                const targetSection = link.dataset.section;
+                
+                // Hide all sections first
+                addAppSection.style.display = 'none';
+                manageAppsSection.style.display = 'none';
+
+                // Clear messages when switching sections
+                addAppMessage.style.display = 'none';
+                editAppMessage.style.display = 'none';
+
+                if (targetSection === 'add-app') {
+                    addAppSection.style.display = 'flex';
+                } else if (targetSection === 'manage-apps') {
+                    manageAppsSection.style.display = 'flex';
+                } else if (link.id === 'logout-btn') {
+                    // Logout handled by its own click listener, no section to show
+                }
+
+                // Close sidebar on mobile after selection
+                if (window.innerWidth <= 768) {
+                    toggleAdminSidebar();
+                }
+            });
+        });
+
+        // Check login status on page load
+        checkLoginStatus();
+
+        // Adjust layout on window resize
+        window.addEventListener('resize', () => {
+            if (auth.currentUser && auth.currentUser.uid === ADMIN_UID) {
+                if (window.innerWidth > 768) {
+                    adminSidebar.classList.add('active');
+                    adminMainContent.style.marginLeft = '250px';
+                    adminOverlay.classList.remove('active'); // Hide overlay on desktop
+                } else {
+                    adminSidebar.classList.remove('active'); // Hide sidebar by default on mobile
+                    adminMainContent.style.marginLeft = '0';
+                    adminOverlay.classList.remove('active'); // Hide overlay when resizing to mobile from desktop
+                }
+            }
+        });
+    </script>
+</body>
+</html>
