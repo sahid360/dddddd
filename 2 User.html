@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title></title> <!-- Dynamic Title -->
+
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123) { return false; } 
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { return false; }
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) { return false; }
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { return false; }
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { return false; }
+        }
+    </script>
+    
+    <link id="dynamic-favicon" rel="icon" href="data:,"> 
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-grad: linear-gradient(135deg, #00b894, #00cec9);
+        --primary-solid: #00b894; 
+        --green-btn: linear-gradient(135deg, #27ae60, #2ecc71);
+        --like-color: #ff7675;
+        
+        --bg-body: #f4f7f6;
+        --header-bg: #ffffff;
+        --card-bg: #ffffff;
+        --search-bg: #f1f2f6;
+        --tab-bg-blur: rgba(255, 255, 255, 0.85);
+        --tab-text: #636e72;
+        --text-main: #2d3436;
+        --text-sub: #636e72;
+        
+        --shadow-card: 0 10px 25px rgba(0,0,0,0.04);
+        --nav-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        --border-color: rgba(0,0,0,0.05);
+        --radius: 18px;
+    }
+
+    body.dark-mode {
+        --bg-body: #1e1e2f;
+        --header-bg: #27293d;
+        --card-bg: #27293d;
+        --search-bg: #1e1e2f;
+        --tab-bg-blur: rgba(39, 41, 61, 0.90); 
+        --tab-text: #aab1b7;
+        --text-main: #ffffff;
+        --text-sub: #aab1b7;
+        --shadow-card: 0 10px 25px rgba(0,0,0,0.2);
+        --nav-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        --border-color: rgba(255,255,255,0.05);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Outfit', sans-serif; }
+    body { margin: 0; padding: 0; background: var(--bg-body); color: var(--text-main); padding-bottom: 50px; transition: background 0.3s, color 0.3s; }
+
+    /* --- TOAST NOTIFICATION --- */
+    #toast-box {
+        position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+        background: rgba(30, 39, 46, 0.95); color: white;
+        padding: 12px 25px; border-radius: 50px; font-size: 13px; font-weight: 500;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 9999;
+        opacity: 0; visibility: hidden; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        display: flex; align-items: center; gap: 10px; white-space: nowrap;
+    }
+    #toast-box.show { opacity: 1; visibility: visible; bottom: 60px; }
+    #toast-box i { font-size: 16px; color: #00C853; }
+
+    /* --- LOADER --- */
+    #loader-screen {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: var(--bg-body); z-index: 9999; display: flex; flex-direction: column;
+        justify-content: center; align-items: center; transition: opacity 0.4s;
+    }
+    #loader-img {
+        max-width: 80%;
+        width: 150px; 
+        height: auto;
+        object-fit: contain;
+        animation: pulseLogo 2s infinite ease-in-out;
+        display: none; 
+    }
+    @keyframes pulseLogo {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Header */
+    header {
+        position: sticky; top: 0; z-index: 100; background: var(--header-bg); 
+        padding: 5px 15px; 
+        display: flex; justify-content: space-between; align-items: center;
+        transition: background 0.3s; height: 70px;
+    }
+    
+    .brand-logo { 
+        font-weight: 800; 
+        color: var(--text-main);
+        text-decoration: none; letter-spacing: -0.5px; 
+        display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; 
+        max-width: 60%;
+    }
+    
+    .brand-img-logo { 
+        display: none; 
+        object-fit: contain; 
+        height: 100%; 
+        max-height: 55px;
+        margin-right: auto; 
+        margin-left: 0;
+        transition: all 0.3s;
+    }
+
+    .header-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+    .icon-btn {
+        font-size: 18px; color: var(--text-main); cursor: pointer; width: 36px; height: 36px; 
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        background: var(--search-bg); transition: 0.2s; text-decoration: none; border: none; outline: none;
+    }
+    .icon-btn:active { transform: scale(0.92); opacity: 0.8; }
+    .telegram-btn { color: #0088cc; background: rgba(0, 136, 204, 0.1); }
+    .upload-btn { color: #e17055; background: rgba(225, 112, 85, 0.1); display: none; }
+    
+    /* MODIFIED: Community Button to use Primary Color (Green) */
+    .community-btn { color: #6c5ce7; background: rgba(108, 92, 231, 0.1); display: none; } /* COLOR CHANGED HERE */
+
+    /* Search & Nav */
+    #search-area { display: none; background: var(--header-bg); padding: 10px 20px 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.03); position: relative; z-index: 95; }
+    .search-box { background: var(--search-bg); border-radius: 12px; display: flex; align-items: center; padding: 10px 15px; border: 1px solid transparent; transition: 0.3s; }
+    .search-box:focus-within { border-color: var(--primary-solid); background: var(--header-bg); }
+    .search-box input { border: none; background: transparent; width: 100%; outline: none; font-size: 15px; color: var(--text-main); }
+    .search-box i { color: #b2bec3; margin-right: 10px; }
+
+    .category-nav {
+        position: sticky; top: 70px; z-index: 90; background: var(--tab-bg-blur); 
+        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        padding: 6px 20px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; transition: 0.3s;
+        box-shadow: var(--nav-shadow); border-bottom: 1px solid var(--border-color);
+    }
+    .category-nav::-webkit-scrollbar { display: none; }
+    .nav-pill {
+        display: flex; align-items: center; justify-content: center; height: 26px; padding: 0 14px; border-radius: 50px;
+        background: transparent; color: var(--tab-text); font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer;
+        border: 1px solid var(--border-color); transition: all 0.3s;
+    }
+    .nav-pill:hover { border-color: var(--primary-solid); color: var(--primary-solid); }
+    .nav-pill.active { background: var(--primary-solid); color: #fff; border-color: var(--primary-solid); box-shadow: 0 2px 6px rgba(0,184,148,0.25); }
+
+    /* --- BANNERS FIX --- */
+    #banner-area {
+        padding: 10px 20px 0; 
+        margin-bottom: 0; 
+        display: none; 
+        position: relative;
+    }
+    .banner-slider {
+        display: flex; gap: 15px; overflow-x: auto; scrollbar-width: none; scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory;
+        padding-bottom: 5px; 
+    }
+    .banner-slider::-webkit-scrollbar { display: none; }
+    
+    .banner-slide {
+        min-width: 100%; height: 100px; 
+        border-radius: 12px; 
+        overflow: hidden;
+        scroll-snap-align: center; position: relative; box-shadow: var(--shadow-card);
+        cursor: pointer;
+        transform: translate3d(0, 0, 0); 
+        -webkit-transform: translate3d(0, 0, 0);
+        isolation: isolate; 
+        -webkit-mask-image: -webkit-radial-gradient(white, black); 
+        will-change: transform; 
+    }
+    .banner-img { 
+        width: 100%; height: 100%; object-fit: cover; 
+        border-radius: 12px; 
+        display: block;
+    }
+    
+    .banner-dots {
+        display: flex; justify-content: center; gap: 6px; 
+        margin-top: -15px; 
+        margin-bottom: 15px;
+        position: relative;
+        z-index: 5;
+    }
+    .dot {
+        width: 6px; height: 6px; background: rgba(0,0,0,0.1); border-radius: 50%; transition: 0.3s;
+        background: rgba(255, 255, 255, 0.5); 
+        backdrop-filter: blur(2px);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    body.dark-mode .dot { background: rgba(0,0,0,0.4); }
+    .dot.active { background: var(--primary-solid); width: 16px; border-radius: 10px; }
+
+    /* App Grid */
+    .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 15px; padding: 0 20px 20px; }
+    .app-card {
+        background: var(--card-bg); border-radius: var(--radius); padding: 15px 10px; text-align: center;
+        box-shadow: var(--shadow-card); cursor: pointer; display: flex; flex-direction: column; align-items: center; position: relative;
+        border: 1px solid var(--border-color); transition: transform 0.2s, background 0.3s;
+    }
+    .app-card:active { transform: scale(0.96); }
+    
+    .badge-overlay {
+        position: absolute; top: -6px; left: -6px; background: var(--primary-grad); color: white;
+        font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 10px 0 10px 0; text-transform: uppercase;
+        box-shadow: 0 4px 10px rgba(0,184,148,0.3); z-index: 10;
+    }
+    .app-img { width: 75px; height: 75px; border-radius: 18px; object-fit: cover; margin-bottom: 12px; box-shadow: 0 8px 15px rgba(0,0,0,0.08); background: #eee; }
+    .app-title { font-size: 13px; font-weight: 600; color: var(--text-main); width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 3px; }
+    .app-cat { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; font-weight: 500; }
+    .card-footer { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 5px; }
+    .app-meta-line { display: flex; align-items: center; font-size: 9px; color: var(--text-sub); font-weight: 600; background: var(--search-bg); padding: 2px 6px; border-radius: 6px; flex-wrap: wrap; justify-content: center; }
+    .meta-sep { margin: 0 3px; opacity: 0.3; }
+    .like-mini { color: var(--like-color); margin-right: 2px; }
+    .dl-icon { width: 24px; height: 24px; background: rgba(0,184,148,0.1); color: var(--primary-solid); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 10px; margin-left: 5px; flex-shrink: 0; }
+
+    /* IN-FEED & SPONSOR ADS STYLING */
+    .in-feed-ad {
+        grid-column: 1 / -1; 
+        width: 100%;
+        text-align: center;
+        margin: 0; 
+        overflow: hidden;
+        background: transparent;
+        min-height: 80px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 8px;
+    }
+    
+    /* SPONSOR ADS (SQUARE + NO RADIUS) */
+    .in-feed-ad.sponsor-ad {
+        border-radius: 0 !important;
+    }
+    .sponsor-ad img {
+        width: 100%;
+        height: auto;
+        border-radius: 0 !important; 
+        box-shadow: var(--shadow-card);
+        display: block;
+    }
+
+    /* Modal */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: center; align-items: flex-end;
+        backdrop-filter: blur(5px);
+    }
+    .modal-sheet {
+        background: var(--card-bg); width: 100%; max-width: 500px; border-radius: 30px 30px 0 0; padding: 35px 25px 30px;
+        box-shadow: 0 -10px 50px rgba(0,0,0,0.2); animation: slideUp 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); position: relative; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+    .close-btn { position: absolute; top: 15px; right: 20px; font-size: 26px; color: var(--text-sub); background: none; border: none; cursor: pointer; opacity: 0.5; z-index: 10; }
+    .modal-header { display: flex; gap: 20px; margin-bottom: 20px; align-items: center; }
+    .modal-icon { width: 90px; height: 90px; border-radius: 22px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); object-fit: cover;}
+    .modal-info h2 { margin: 0; font-size: 22px; font-weight: 700; color: var(--text-main); line-height: 1.3; }
+    .modal-info p { margin: 5px 0 0; color: var(--primary-solid); font-size: 14px; font-weight: 500; background: rgba(0,184,148,0.1); display: inline-block; padding: 4px 10px; border-radius: 8px; }
+    .modal-desc { font-size: 13px; color: var(--text-sub); line-height: 1.5; margin-bottom: 25px; padding: 10px; background: var(--search-bg); border-radius: 12px; }
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: var(--search-bg); border-radius: 16px; padding: 15px; margin-bottom: 25px; }
+    .stat-item { text-align: center; border-right: 1px solid rgba(0,0,0,0.05); }
+    .stat-item:last-child { border-right: none; }
+    .stat-val { font-weight: 700; font-size: 15px; color: var(--text-main); margin-bottom: 3px; }
+    .stat-label { font-size: 11px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
+    .clickable { cursor: pointer; } .clickable:active { transform: scale(0.95); } .liked-active { color: var(--like-color) !important; }
+    .btn-action { width: 100%; padding: 18px; border-radius: 16px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.2s; letter-spacing: 0.5px; }
+    .btn-primary { background: var(--green-btn); color: white; box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3); }
+    .btn-primary:active { transform: scale(0.98); box-shadow: none; }
+    
+    .btn-download { background: var(--text-main); color: var(--bg-body); box-shadow: 0 8px 20px rgba(0,0,0, 0.1); text-decoration: none;}
+    .btn-download:active { transform: scale(0.95); box-shadow: none; }
+
+    .status-txt { text-align: center; font-size: 15px; margin-bottom: 15px; color: var(--text-main); font-weight: 500; }
+    .progress-area { margin: 15px 0 25px; background: var(--search-bg); border-radius: 15px; overflow: hidden; height: 14px; }
+    .progress-fill { height: 100%; background: var(--primary-grad); width: 0%; transition: 0.5s; border-radius: 15px; }
+
+    /* UPLOAD MODAL FORM */
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 5px; }
+    .form-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--search-bg); color: var(--text-main); outline: none; }
+    .form-input:focus { border-color: var(--primary-solid); }
+    textarea.form-input { resize: vertical; min-height: 80px; font-family: 'Outfit', sans-serif; }
+
+    .btn-submit-small {
+        width: auto; min-width: 150px; margin: 10px auto 0; padding: 10px 25px; border-radius: 50px;
+        font-size: 14px; font-weight: 600; background: var(--green-btn); color: white;
+        border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+        display: block; transition: transform 0.2s;
+    }
+    .btn-submit-small:active { transform: scale(0.95); }
+
+    /* COMMUNITY UPDATES */
+    .comm-feed { flex: 1; overflow-y: auto; margin-top: 10px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 15px; }
+    .comm-msg { background: var(--search-bg); padding: 12px; border-radius: 12px; position: relative; }
+    
+    .comm-header { display: flex; align-items: center; margin-bottom: 6px; }
+    
+    .comm-avatar {
+        width: 26px; height: 26px; 
+        border-radius: 50%; color: white;
+        display: flex; justify-content: center; align-items: center;
+        font-weight: 700; font-size: 11px; 
+        margin-right: 8px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2); flex-shrink: 0;
+    }
+    
+    .comm-user { font-weight: 700; font-size: 11px; color: var(--text-main); }
+    .comm-time { font-weight: 400; color: var(--text-sub); font-size: 9px; display: block; margin-top: 0px;}
+    .comm-text { font-size: 15px; color: var(--text-main); line-height: 1.4; word-wrap: break-word; padding-left: 34px; margin-top: -6px; }
+    
+    .comm-actions { margin-top: 8px; display: flex; gap: 15px; align-items: center; padding-left: 34px; }
+    .comm-action-btn { background: none; border: none; font-size: 12px; color: var(--text-sub); cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0; }
+    .comm-action-btn.active { color: #ff7675; }
+    
+    .comm-admin-reply { margin-top: 8px; padding: 8px; background: rgba(108, 92, 231, 0.1); border-left: 3px solid #6c5ce7; border-radius: 4px; margin-left: 34px; }
+    .comm-admin-title { font-size: 11px; font-weight: 700; color: #6c5ce7; margin-bottom: 2px; }
+    .comm-admin-text { font-size: 13px; color: var(--text-main); }
+
+    .comm-input-area { display: flex; gap: 10px; margin-top: auto; position: relative; align-items: center; }
+    .comm-input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid var(--border-color); background: var(--search-bg); color: var(--text-main); outline: none; }
+    .comm-send { width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--primary-solid); color: white; cursor: pointer; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+    
+    .comm-paused { text-align: center; padding: 15px; background: rgba(225, 112, 85, 0.1); color: #e17055; border-radius: 12px; font-weight: 600; font-size: 14px; margin-top: auto; }
+
+    /* Emoji Picker */
+    .emoji-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent; color: #f1c40f; font-size: 20px; cursor: pointer; transition: 0.2s; order: -1; }
+    .emoji-btn:hover { background: rgba(0,0,0,0.05); }
+    .emoji-picker-box { 
+        position: absolute; bottom: 60px; left: 0; 
+        background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 30px; padding: 8px 12px; 
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1); 
+        display: flex; gap: 5px; overflow-x: auto; 
+        z-index: 100; width: 100%; white-space: nowrap; scrollbar-width: none;
+    }
+    .emoji-picker-box::-webkit-scrollbar { display: none; }
+    .emoji-item { font-size: 20px; cursor: pointer; padding: 5px 8px; border-radius: 50%; transition: 0.2s; background: transparent; flex-shrink: 0; }
+    .emoji-item:hover { background: var(--search-bg); transform: scale(1.2); }
+
+    .hidden { display: none !important; }
+    .loader-msg { text-align: center; grid-column: 1/-1; padding: 40px; color: var(--text-sub); font-size: 14px; }
+    
+    /* HIDDEN CONTAINER FOR SPECIAL ADS */
+    #special-ads-container { display: none; }
+</style>
+</head>
+<body>
+
+<!-- UPDATED LOADER (SHOWS LOGO) -->
+<div id="loader-screen">
+    <img id="loader-img" src="" alt="">
+</div>
+
+<!-- Toast Notification -->
+<div id="toast-box">
+    <i class="fas fa-check-circle"></i>
+    <span id="toast-msg">Action Successful</span>
+</div>
+
+<!-- SPECIAL ADS CONTAINER (POPUNDER/INTERSTITIAL) -->
+<div id="special-ads-container"></div>
+
+<header>
+    <!-- Dynamic Header -->
+    <a href="#" class="brand-logo"></a>
+    <img id="brand-img-logo" class="brand-img-logo" src="" alt="Logo">
+    
+    <div class="header-actions">
+        <button class="icon-btn theme-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="theme-icon"></i></button>
+        <button class="icon-btn community-btn" id="btn-comm" onclick="openCommModal()"><i class="fas fa-users"></i></button>
+        
+        <!-- Upload Button -->
+        <button class="icon-btn upload-btn" id="btn-upload" onclick="openUploadModal()"><i class="fas fa-cloud-upload-alt"></i></button>
+        
+        <a href="#" target="_blank" class="icon-btn telegram-btn" id="tg-link-btn"><i class="fab fa-telegram"></i></a>
+        <button class="icon-btn search-btn-toggle" onclick="toggleSearch(event)"><i class="fas fa-search"></i></button>
+    </div>
+</header>
+
+<div id="search-area">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="search-input" placeholder="Search apps, games..." onkeyup="renderApps()">
+    </div>
+</div>
+
+<!-- UPDATED NAVIGATION TABS -->
+<div class="category-nav">
+    <div class="nav-pill active" onclick="switchCategory('For You', this)">For You</div>
+    <div class="nav-pill" onclick="switchCategory('Popular', this)">Popular</div>
+    <div class="nav-pill" onclick="switchCategory('Movies', this)">Movies</div>
+    <div class="nav-pill" onclick="switchCategory('Drama', this)">Drama</div>
+    <div class="nav-pill" onclick="switchCategory('Music', this)">Music</div>
+    <div class="nav-pill" onclick="switchCategory('Games', this)">Games</div>
+    <div class="nav-pill" onclick="switchCategory('Editing', this)">Editing</div>
+    <div class="nav-pill" onclick="switchCategory('Video', this)">Video</div>
+    <div class="nav-pill" onclick="switchCategory('Others', this)">Others</div>
+</div>
+
+<!-- Banner Area -->
+<div id="banner-area">
+    <div class="banner-slider" id="banner-slider"></div>
+    <div class="banner-dots" id="banner-dots"></div>
+</div>
+
+<div class="app-grid" id="app-container"></div>
+
+<!-- App Details Modal -->
+<div class="modal-overlay" id="appModal" onclick="checkClose(event)">
+    <div class="modal-sheet">
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+        <div class="modal-header">
+            <img src="" id="m-img" class="modal-icon">
+            <div class="modal-info">
+                <h2 id="m-title">App Name</h2>
+                <p id="m-cat">Category</p>
+            </div>
+        </div>
+        <div id="m-desc" class="modal-desc hidden"></div>
+        <div class="stats-row">
+            <div class="stat-item clickable" onclick="toggleLike()">
+                <div class="stat-val" id="like-box"><i class="fas fa-heart" id="like-icon"></i> <span id="m-likes">0</span></div>
+                <div class="stat-label">Tap to Like</div>
+            </div>
+            <div class="stat-item"><div class="stat-val" id="m-downloads">0</div><div class="stat-label">Downloads</div></div>
+            <div class="stat-item"><div class="stat-val" id="m-version">v1.0</div><div class="stat-label">Version</div></div>
+        </div>
+        <div class="status-txt" id="ads-text">Unlock download link</div>
+        <div class="progress-area"><div class="progress-fill" id="progress-bar"></div></div>
+        <button class="btn-action btn-primary" id="btn-watch" onclick="watchAd()"><i class="fas fa-play"></i> Watch Ad to Unlock App</button>
+        <a href="#" class="btn-action btn-download hidden" id="btn-install" target="_blank" onclick="trackDownload()"><i class="fas fa-cloud-download-alt"></i> Download Now</a>
+        <div style="text-align:center; font-size:10px; color:#b2bec3; margin-top:20px;"><i class="fas fa-shield-alt" style="color:#00b894;"></i> Secure • Verified • Fast</div>
+    </div>
+</div>
+
+<!-- Upload App Modal -->
+<div class="modal-overlay" id="uploadModal" onclick="checkCloseUpload(event)">
+    <div class="modal-sheet">
+        <button class="close-btn" onclick="closeUploadModal()">&times;</button>
+        <h3 style="margin:0 0 15px;">Submit App</h3>
+        <p style="font-size:12px; color:var(--text-sub); margin-top:0; margin-bottom:20px;">Your app will be reviewed by admin before publishing.</p>
+        
+        <div class="form-group">
+            <label>App Name</label>
+            <input type="text" id="up-name" class="form-input" placeholder="e.g. Pubg Mobile">
+        </div>
+
+        <div class="form-group">
+            <label>Version (Optional)</label>
+            <input type="text" id="up-ver" class="form-input" placeholder="v1.0">
+        </div>
+        
+        <div class="form-group">
+            <label>Category</label>
+            <select id="up-cat" class="form-input" onchange="checkCustomCatUser()">
+                <option value="Movies">Movies</option>
+                <option value="Drama">Drama</option>
+                <option value="Music">Music</option> 
+                <option value="Games">Games</option>
+                <option value="Editing">Editing</option>
+                <option value="Video">Video</option>
+                <option value="Others">Others</option>
+                <option value="custom">+ Write Custom Category</option>
+            </select>
+            <input type="text" id="up-cat-custom" class="form-input hidden" style="margin-top:10px; border-color:var(--primary-solid);" placeholder="Type category name here...">
+        </div>
+
+        <div class="form-group">
+            <label>Short Description</label>
+            <textarea id="up-desc" class="form-input" placeholder="Brief description about the app..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Logo URL</label>
+            <input type="text" id="up-logo" class="form-input" placeholder="Image Link">
+        </div>
+        
+        <div class="form-group">
+            <label>Download Link</label>
+            <input type="text" id="up-link" class="form-input" placeholder="File Link">
+        </div>
+
+        <button class="btn-submit-small" onclick="submitApp()">Submit App</button>
+    </div>
+</div>
+
+<!-- Community Modal -->
+<div class="modal-overlay" id="commModal" onclick="checkCloseComm(event)">
+    <div class="modal-sheet" style="height:80vh;">
+        <button class="close-btn" onclick="closeCommModal()">&times;</button>
+        <h3 style="margin:0 0 5px;">Community</h3>
+        <p style="font-size:12px; color:var(--text-sub); margin-top:0;">Request apps or chat with others!</p>
+        
+        <div class="comm-feed" id="comm-feed">
+            <div style="text-align:center; padding:20px; color:var(--text-sub);">Loading messages...</div>
+        </div>
+        <div id="comm-paused-msg" class="comm-paused hidden">🔴 Chat paused by Admin</div>
+        <div id="comm-input-area" class="comm-input-area">
+            <div class="emoji-picker-box hidden" id="emoji-list">
+                <div class="emoji-item" onclick="addEmoji('😀')">😀</div>
+                <div class="emoji-item" onclick="addEmoji('😂')">😂</div>
+                <div class="emoji-item" onclick="addEmoji('😍')">😍</div>
+                <div class="emoji-item" onclick="addEmoji('❤️')">❤️</div>
+                <div class="emoji-item" onclick="addEmoji('🔥')">🔥</div>
+                <div class="emoji-item" onclick="addEmoji('👍')">👍</div>
+                <div class="emoji-item" onclick="addEmoji('😭')">😭</div>
+                <div class="emoji-item" onclick="addEmoji('😎')">😎</div>
+                <div class="emoji-item" onclick="addEmoji('🎉')">🎉</div>
+                <div class="emoji-item" onclick="addEmoji('🙏')">🙏</div>
+                <div class="emoji-item" onclick="addEmoji('🤔')">🤔</div>
+                <div class="emoji-item" onclick="addEmoji('😢')">😢</div>
+                <div class="emoji-item" onclick="addEmoji('🤩')">🤩</div>
+                <div class="emoji-item" onclick="addEmoji('😡')">😡</div>
+                <div class="emoji-item" onclick="addEmoji('👻')">👻</div>
+            </div>
+            <button class="emoji-btn" onclick="toggleEmoji()"><i class="far fa-smile"></i></button>
+            <input type="text" id="comm-input" class="comm-input" placeholder="Type a message...">
+            <button class="comm-send" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+    const firebaseConfig = {
+
+apiKey: "AIzaSyCTWDBdADMvMo3CbDzU5zx-PfgX7POWPGs",
+authDomain: "apk-41682.firebaseapp.com",
+databaseURL: "https://apk-41682-default-rtdb.firebaseio.com",
+projectId: "apk-41682",
+storageBucket: "apk-41682.firebasestorage.app",
+messagingSenderId: "726314444762",
+appId: "1:726314444762:web:c1e8e51e783e2add0502e3"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let reqAds = 1; let countAds = 0; let currentLink = ""; let currentAppKey = "";
+    let allApps = {}; let currentCategory = "For You"; let downloadCountedInSession = false; 
+    const today = new Date().toISOString().split('T')[0];
+    let commMode = 'active'; 
+    let uploadMode = 'active'; 
+    let adZoneId = ""; 
+    let newBadgeDurationHours = 48; 
+    
+    let allFeedAds = [];
+    let allSponsorAds = []; 
+    let allSpecialAds = [];
+    
+    let bannerTimer = null; 
+    let slideIntervalTime = 5000; 
+
+    // UPDATED USERNAME LOGIC
+    let myUsername = localStorage.getItem('username');
+    
+    // --- NEW NAMES ARRAY (Approx 120 names from America, Philippines, Korea, Japan, Vietnam) ---
+    const names = [
+        // America (US/UK)
+        "Liam", "Noah", "Oliver", "Elijah", "William", "James", "Benjamin", "Lucas", "Henry", "Alexander",
+        "Emma", "Olivia", "Ava", "Isabella", "Sophia", "Charlotte", "Amelia", "Mia", "Evelyn", "Abigail",
+        "Ethan", "George", "Jackson", "Scarlett", "Chloe", "Alice", "Samuel", "Lily",
+        // Philippines
+        "Maria", "Jose", "Juan", "Carlos", "Antonio", "Angel", "Grace", "Princess", "Rose", "Ella",
+        "Joshua", "Adrian", "Mikaela", "Gabriel", "David", "Nicole", "Jasmine", "Bea", "Sofia", "Kenji",
+        "Rafael", "Patricia", "Christian", "Jana", "Marco", "Julian", "Camille", "Rey",
+        // Korea
+        "Ji-woo", "Min-jun", "Seo-jun", "Ha-jun", "Do-yun", "Soo-ah", "Seo-yeon", "Ji-an", "Ha-eun", "Ye-eun",
+        "Hana", "Joon", "Tae", "Yoo-jin", "Si-woo", "Jung-ho", "Mi-sook", "Eun-ji", "Hyun-woo", "Young-ho",
+        "Se-ri", "Jae-sung", "Minji", "Jungkook", "Lisa", "Jennie", "Jimin", "Suga",
+        
+        // MODIFIED: 'Ki-tae', 'V', 'RM' removed, 'Seulgi', 'Hye-ri', 'Jae-young' added
+        "Woo-jin", "Sung-min", "Jae-hyun", "Jin-woo", "Han-sol", "Jun-ho", "Min-hyuk", "Dong-hyun", "Seung-ho", "Seulgi",
+        "Chanyeol", "Sehun", "Hye-ri", "Jae-young", "Baekhyun", "Kai", "J-Hope", "Jay", "Sunoo", "Heeseung", 
+        "Doyoung", "Taeyong", "Ten", "Mark", "Eun-seo", "Ji-hye", "Min-ji", "Soo-bin", "Da-eun", "Ah-reum", 
+        "Boram", "Hyo-jin", "Kyu-ri", "Yuri", "Sunny", "Hyuna", "Irene", "Joy", "Yeri", "Jisoo", 
+        "Rosé", "Sana", "Momo", "Mina", "Tzuyu", "Karina", "Winter", "Ningning", "Giselle", "Wonyoung", 
+        "Yujin", "Hye-won", "Dahyun", "Jihyo", "Jeongyeon", "Chaeyoung",
+        
+        // Japan
+        "Haruto", "Sota", "Yuto", "Kaito", "Riku", "Ren", "Takumi", "Akira", "Hiroshi", "Kenji", "Satoshi",
+        "Mei", "Yui", "Sakura", "Hinata", "Aoi", "Emi", "Ayumi", "Momoko", "Tsubasa", "Kazuki", "Haruka",
+        "Kiko", "Mio", "Rina", "Ichiro", "Yumi", "Daiki",
+        // Vietnam
+        "Nguyên", "Minh", "Khang", "An", "Bảo", "Anh", "Châu", "Diệu", "Hà", "Hương",
+        "Lan", "Mai", "Thư", "Vy", "Sơn", "Dũng", "Phúc", "Thắng", "Linh", "Oanh",
+        "Trúc", "Vỹ", "Kiên", "Quân", "Thanh", "Quyên", "Công", "Nhi"
+    ];
+    const adjectives = ["Cool", "Happy", "Fast", "Smart", "Lazy", "Wild"]; // To check old format
+    
+    // 1. Check and clean existing username if it has the old format (e.g., "Fast Panda" -> "Panda")
+    if (myUsername) {
+        const parts = myUsername.split(' ');
+        if (parts.length === 2 && adjectives.includes(parts[0])) { 
+            myUsername = parts[1]; // Keep only the name
+            localStorage.setItem('username', myUsername);
+        }
+    }
+    
+    // 2. Generate new username if none exists (now using names from the new array)
+    if(!myUsername || myUsername.length < 3) {
+        myUsername = names[Math.floor(Math.random()*names.length)];
+        localStorage.setItem('username', myUsername);
+    }
+    // END OF UPDATED USERNAME LOGIC
+
+    window.onload = function() {
+        if(localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('theme-icon').classList.replace('fa-moon', 'fa-sun');
+        }
+        db.ref('stats/total/views').transaction(v => (v || 0) + 1);
+        db.ref(`stats/daily/${today}/views`).transaction(v => (v || 0) + 1);
+        loadSettings(); loadApps(); loadBanners(); loadSpecialAds();
+    };
+
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        const icon = document.getElementById('theme-icon');
+        if(document.body.classList.contains('dark-mode')) { icon.classList.replace('fa-moon', 'fa-sun'); localStorage.setItem('theme', 'dark'); } 
+        else { icon.classList.replace('fa-sun', 'fa-moon'); localStorage.setItem('theme', 'light'); }
+    }
+
+    function toggleSearch(e) {
+        if(e) e.stopPropagation();
+        const searchArea = document.getElementById('search-area');
+        const nav = document.querySelector('.category-nav'); 
+        const bannerArea = document.getElementById('banner-area');
+
+        if (searchArea.style.display === 'block') { 
+            searchArea.style.display = 'none'; 
+            nav.style.display = 'flex'; 
+            if(currentCategory === 'For You') bannerArea.style.display = 'block';
+            document.getElementById('search-input').value = ''; 
+            renderApps(); 
+        } 
+        else { 
+            searchArea.style.display = 'block'; 
+            nav.style.display = 'none'; 
+            bannerArea.style.display = 'none';
+            document.getElementById('search-input').focus(); 
+        }
+    }
+    
+    function switchCategory(cat, el) {
+        currentCategory = cat;
+        document.querySelectorAll('.nav-pill').forEach(e => e.classList.remove('active'));
+        el.classList.add('active'); 
+        const bannerArea = document.getElementById('banner-area');
+        if(cat === 'For You' && document.getElementById('search-area').style.display !== 'block') {
+             bannerArea.style.display = 'block';
+        } else {
+             bannerArea.style.display = 'none';
+        }
+        renderApps();
+    }
+
+    document.addEventListener('click', e => {
+        const searchArea = document.getElementById('search-area');
+        if(searchArea.style.display === 'block' && !searchArea.contains(e.target) && !document.querySelector('.search-btn-toggle').contains(e.target)) {
+            searchArea.style.display = 'none'; 
+            document.querySelector('.category-nav').style.display = 'flex';
+            if(currentCategory === 'For You') document.getElementById('banner-area').style.display = 'block';
+            document.getElementById('search-input').value = '';
+            renderApps();
+        }
+        const emojiBox = document.getElementById('emoji-list');
+        const emojiBtn = document.querySelector('.emoji-btn');
+        if(!emojiBox.classList.contains('hidden') && !emojiBox.contains(e.target) && !emojiBtn.contains(e.target)) {
+            emojiBox.classList.add('hidden');
+        }
+    });
+
+    function loadSettings() { 
+        db.ref('settings').on('value', snap => {
+            const data = snap.val() || {};
+            
+            const appName = data.appName || ""; 
+            document.title = appName; 
+            
+            const brandLogo = document.querySelector('.brand-logo');
+            brandLogo.innerHTML = appName;
+            
+            if(data.appNameColor) brandLogo.style.color = data.appNameColor;
+            if(data.appNameFontSize) brandLogo.style.fontSize = data.appNameFontSize + 'px';
+
+            if(data.siteLogo) {
+                document.getElementById('dynamic-favicon').href = data.siteLogo;
+            }
+
+            reqAds = data.adsCount || 1;
+            commMode = data.communityMode || 'active'; 
+            uploadMode = data.uploadMode || 'active';
+
+            const brandImg = document.getElementById('brand-img-logo');
+            
+            if(data.headerMode === 'logo' && data.siteLogo) {
+                brandLogo.style.display = 'none';
+                brandImg.style.display = 'block';
+                brandImg.src = data.siteLogo;
+                if(data.headerLogoWidth) brandImg.style.width = data.headerLogoWidth + 'px';
+            } else {
+                brandLogo.style.display = 'block';
+                brandImg.style.display = 'none';
+            }
+
+            const loaderImg = document.getElementById('loader-img');
+            if(data.siteLogo) {
+                loaderImg.src = data.siteLogo;
+                loaderImg.style.display = 'block';
+                if(data.logoWidth) loaderImg.style.width = data.logoWidth + "px";
+            }
+
+            const loadDuration = (data.loadingDuration || 2) * 1000;
+            setTimeout(() => {
+                document.getElementById('loader-screen').style.opacity = '0';
+                setTimeout(() => document.getElementById('loader-screen').style.display = 'none', 400);
+            }, loadDuration);
+
+            if(data.bannerInterval) {
+                slideIntervalTime = data.bannerInterval * 1000;
+                loadBanners();
+            }
+
+            const tgBtn = document.getElementById('tg-link-btn');
+            if(data.telegramLink && data.telegramLink.startsWith('http')) {
+                tgBtn.href = data.telegramLink;
+                tgBtn.style.display = 'flex';
+            } else {
+                tgBtn.style.display = 'none';
+            }
+
+            if(data.monetagZoneId) adZoneId = data.monetagZoneId;
+            
+            if(adZoneId && !document.getElementById('monetag-script')) {
+                const script = document.createElement('script');
+                script.id = 'monetag-script';
+                script.src = '//libtl.com/sdk.js';
+                script.dataset.zone = adZoneId;
+                script.dataset.sdk = 'show_' + adZoneId;
+                document.head.appendChild(script);
+            }
+
+            const commBtn = document.getElementById('btn-comm');
+            const inputArea = document.getElementById('comm-input-area');
+            const pausedMsg = document.getElementById('comm-paused-msg');
+
+            if(commMode === 'hidden') {
+                commBtn.style.display = 'none';
+            } else {
+                commBtn.style.display = 'flex';
+                if(commMode === 'paused') {
+                    inputArea.classList.add('hidden');
+                    pausedMsg.classList.remove('hidden');
+                } else {
+                    inputArea.classList.remove('hidden');
+                    pausedMsg.classList.add('hidden');
+                }
+            }
+
+            const upBtn = document.getElementById('btn-upload');
+            if(uploadMode === 'hidden') {
+                upBtn.style.display = 'none';
+            } else {
+                upBtn.style.display = 'flex'; 
+            }
+
+            if(data.newBadgeDuration) {
+                newBadgeDurationHours = parseInt(data.newBadgeDuration);
+                renderApps(); 
+            }
+        });
+
+        // FETCH IN-FEED ADS & TRIGGER RENDER (REAL-TIME)
+        db.ref('feed_ads').on('value', snap => {
+            allFeedAds = [];
+            const data = snap.val();
+            if(data) {
+                Object.values(data).forEach(ad => {
+                    if(ad.active) allFeedAds.push(ad);
+                });
+            }
+            renderApps(true); // FORCE RENDER because ads changed
+        });
+
+        // FETCH SPONSOR ADS & TRIGGER RENDER (REAL-TIME)
+        db.ref('sponsor_ads').on('value', snap => {
+            allSponsorAds = [];
+            const data = snap.val();
+            if(data) {
+                Object.values(data).forEach(ad => {
+                    if(ad.active) allSponsorAds.push(ad);
+                });
+            }
+            renderApps(true); // FORCE RENDER because ads changed
+        });
+    }
+
+    // --- SPECIAL ADS (Popunder, Interstitial) LOADER ---
+    function loadSpecialAds() {
+        db.ref('special_ads').on('value', snap => {
+            const data = snap.val();
+            const container = document.getElementById('special-ads-container');
+            container.innerHTML = ''; // Clean old scripts
+            
+            if(data) {
+                Object.values(data).forEach(ad => {
+                    if(ad.active && ad.code) {
+                        // Helper to append script to body for execution
+                        const div = document.createElement('div');
+                        div.innerHTML = ad.code;
+                        
+                        // To make script tags executable when inserted via innerHTML
+                        Array.from(div.querySelectorAll('script')).forEach( oldScript => {
+                            const newScript = document.createElement('script');
+                            Array.from(oldScript.attributes).forEach( attr => newScript.setAttribute(attr.name, attr.value) );
+                            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                            document.body.appendChild(newScript); // Execute globally
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    function formatDate(ts) { const d = new Date(ts); return `${d.getDate().toString().padStart(2,'0')} ${["Jan","Feb","Mar","Apr","May","Jun","Jul","Oct","Nov","Dec"][d.getMonth()]}`; }
+
+    function loadBanners() {
+        const slider = document.getElementById('banner-slider');
+        const dotsContainer = document.getElementById('banner-dots');
+        const area = document.getElementById('banner-area');
+        
+        db.ref('banners').on('value', snap => {
+            const data = snap.val();
+            if(!data) { area.style.display = 'none'; return; }
+            
+            slider.innerHTML = "";
+            dotsContainer.innerHTML = "";
+            let hasActive = false;
+            let slideCount = 0;
+
+            Object.values(data).forEach(b => {
+                if(b.active) {
+                    hasActive = true;
+                    slideCount++;
+                    const slide = document.createElement('div');
+                    slide.className = 'banner-slide';
+                    slide.onclick = () => window.open(b.link, '_blank');
+                    slide.innerHTML = `<img src="${b.img}" class="banner-img">`;
+                    slider.appendChild(slide);
+
+                    const dot = document.createElement('div');
+                    dot.className = slideCount === 1 ? 'dot active' : 'dot';
+                    dotsContainer.appendChild(dot);
+                }
+            });
+            
+            if(hasActive && currentCategory === 'For You') area.style.display = 'block';
+            else area.style.display = 'none';
+
+            if(slideCount > 1) {
+                slider.onscroll = () => {
+                    const index = Math.round(slider.scrollLeft / slider.offsetWidth);
+                    const dots = dotsContainer.children;
+                    for(let i=0; i<dots.length; i++) {
+                        dots[i].classList.remove('active');
+                        if(i === index) dots[i].classList.add('active');
+                    }
+                };
+
+                if(bannerTimer) clearInterval(bannerTimer);
+                bannerTimer = setInterval(() => {
+                    const width = slider.offsetWidth;
+                    const maxScroll = slider.scrollWidth - width;
+                    if(slider.scrollLeft >= maxScroll - 10) { 
+                        slider.scrollTo({left: 0, behavior: 'smooth'});
+                    } else {
+                        slider.scrollBy({left: width + 15, behavior: 'smooth'}); 
+                    }
+                }, slideIntervalTime); 
+            }
+        });
+    }
+
+    function loadApps() {
+        db.ref('apps').on('value', snap => {
+            const data = snap.val();
+            allApps = data || {}; 
+            renderApps(); 
+            
+            if(currentAppKey && document.getElementById('appModal').style.display === 'flex') {
+                const app = allApps[currentAppKey];
+                if(app) {
+                    document.getElementById('m-likes').innerText = app.likes || 0;
+                    document.getElementById('m-downloads').innerText = formatCount(app.downloads || 0);
+                }
+            }
+        });
+    }
+
+    function insertAdCode(container, htmlCode) {
+        container.innerHTML = "";
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '100px'; 
+        iframe.style.border = 'none';
+        iframe.style.overflow = 'hidden';
+        iframe.scrolling = 'no';
+        iframe.style.display = 'block';
+        iframe.sandbox = "allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation-by-user-activation";
+        const content = `<!DOCTYPE html><html><head><base target="_top"><style>body{margin:0;padding:0;text-align:center;background:transparent;}</style></head><body><div id="ad-wrap">${htmlCode}</div><script>setInterval(function(){var h=document.getElementById('ad-wrap').offsetHeight;if(h>0)window.frameElement.style.height=h+'px';},500);<\/script></body></html>`;
+        iframe.srcdoc = content;
+        container.appendChild(iframe);
+    }
+
+    function renderApps(forceRender = false) {
+        const container = document.getElementById('app-container');
+        const q = document.getElementById('search-input').value.toLowerCase();
+        
+        let filtered = Object.entries(allApps).map(([k, v]) => { v.key = k; return v; })
+            .filter(app => {
+                const name = (app.name||"").toLowerCase();
+                const cat = (app.category||"").toLowerCase();
+                const matchSearch = name.includes(q) || cat.includes(q);
+                if(q.length > 0) return matchSearch;
+                
+                // Show all apps in "For You" and "Popular"
+                if(currentCategory === 'For You' || currentCategory === 'Popular') return true; 
+                
+                // CUSTOM CATEGORY LOGIC:
+                // If current tab is "Others", show apps that DO NOT belong to main categories
+                if (currentCategory === 'Others') {
+                    const mainTabs = ['movies', 'drama', 'music', 'games', 'editing', 'video'];
+                    // Check if the app category includes any of the main tab names
+                    const isMainCategory = mainTabs.some(tab => cat.includes(tab));
+                    return !isMainCategory; // Return true if it's NOT a main category
+                }
+
+                // Default logic for specific tabs (Movies, Drama, etc.)
+                return cat.includes(currentCategory.toLowerCase());
+            })
+            .sort((a,b) => {
+                // Popular Sort Logic
+                if (currentCategory === 'Popular') {
+                    const popularityA = (a.downloads || 0) + (a.likes || 0);
+                    const popularityB = (b.downloads || 0) + (b.likes || 0);
+                    return popularityB - popularityA;
+                }
+                // Default Sort: Newest first
+                return (b.timestamp||0)-(a.timestamp||0);
+            });
+
+        // --- SMART UPDATE (Prevent Ad Refresh) ---
+        const existingCards = container.querySelectorAll('.app-card');
+        if (!forceRender && q.length === 0 && existingCards.length === filtered.length && existingCards.length > 0) {
+            let structureChanged = false;
+            for (let i = 0; i < filtered.length; i++) {
+                if (existingCards[i].id !== `app-card-${filtered[i].key}`) {
+                    structureChanged = true;
+                    break;
+                }
+            }
+            if (!structureChanged) {
+                filtered.forEach(app => {
+                    const card = document.getElementById(`app-card-${app.key}`);
+                    if (card) {
+                        // Update Likes
+                        const likeEl = card.querySelector('.like-num');
+                        if(likeEl.innerText != (app.likes || 0)) likeEl.innerText = app.likes || 0;
+
+                        // Update Downloads
+                        const dlEl = card.querySelector('.dl-num');
+                        if(dlEl.innerText != formatCount(app.downloads || 0)) dlEl.innerText = formatCount(app.downloads || 0);
+
+                        // --- REAL TIME NAME, VERSION & CATEGORY UPDATE ---
+                        
+                        // Update Name
+                        const titleEl = card.querySelector('.app-title');
+                        if(titleEl && titleEl.innerText !== app.name) titleEl.innerText = app.name;
+
+                        // Update Version
+                        const verEl = card.querySelector('.badge-ver');
+                        const vText = app.version || 'v1.0';
+                        if(verEl && verEl.innerText !== vText) verEl.innerText = vText;
+
+                        // Update Category
+                        const catEl = card.querySelector('.app-cat');
+                        if (catEl && catEl.innerText !== app.category) catEl.innerText = app.category;
+                        // ----------------------------------------------------
+                    }
+                });
+                return; 
+            }
+        }
+
+        container.innerHTML = "";
+        if(filtered.length === 0) {
+            container.innerHTML = '<div class="loader-msg">No apps found.</div>';
+            return;
+        }
+
+        filtered.forEach((app, index) => {
+            const durationMs = newBadgeDurationHours * 60 * 60 * 1000;
+            const isNew = (Date.now() - (app.timestamp || 0)) < durationMs;
+
+            const card = document.createElement('div');
+            card.className = 'app-card';
+            card.id = `app-card-${app.key}`;
+            card.onclick = () => openModal(app.key);
+            card.innerHTML = `
+                ${isNew ? '<div class="badge-overlay">New</div>' : ''}
+                <img src="${app.logo}" class="app-img" onerror="this.src='https://placehold.co/75'">
+                <div class="app-title">${app.name}</div>
+                <div class="app-cat">${app.category}</div>
+                <div class="card-footer">
+                    <span class="app-meta-line">
+                        <span class="badge-ver val-ver">${app.version||'v1.0'}</span>
+                        <span class="meta-sep">•</span>
+                        <i class="fas fa-heart like-mini"></i> <span class="like-num">${app.likes||0}</span>
+                        <span class="meta-sep">•</span>
+                        <i class="fas fa-download like-mini" style="color:#00b894;"></i> <span class="dl-num">${formatCount(app.downloads||0)}</span>
+                    </span>
+                    <div class="dl-icon"><i class="fas fa-arrow-down"></i></div>
+                </div>`;
+            container.appendChild(card);
+
+            if(currentCategory === 'For You' && q.length === 0) {
+                let currentPosition = index + 1;
+                if (allFeedAds.length > 0) {
+                    allFeedAds.forEach(ad => {
+                        if(ad.position > 0 && currentPosition === ad.position) {
+                             const adDiv = document.createElement('div');
+                             adDiv.className = 'in-feed-ad';
+                             insertAdCode(adDiv, ad.code);
+                             container.appendChild(adDiv);
+                        }
+                    });
+                }
+                if (allSponsorAds.length > 0) {
+                    allSponsorAds.forEach(ad => {
+                        if(ad.position > 0 && currentPosition === ad.position) {
+                            const adDiv = document.createElement('div');
+                            adDiv.className = 'in-feed-ad sponsor-ad';
+                            adDiv.innerHTML = `
+                                <a href="${ad.link}" target="_blank" style="display:block; width:100%; text-decoration:none;">
+                                    <img src="${ad.img}" style="width:100%; height:auto; border-radius:0 !important; display:block; box-shadow:0 5px 15px rgba(0,0,0,0.1);" alt="Sponsored">
+                                    <div style="font-size:10px; color:var(--text-sub); text-align:right; margin-top:4px; font-weight:500; padding-right: 5px;">Sponsored</div>
+                                </a>
+                            `;
+                            container.appendChild(adDiv);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    function showToast(msg) {
+        const box = document.getElementById('toast-box');
+        document.getElementById('toast-msg').innerText = msg;
+        box.classList.add('show');
+        setTimeout(() => box.classList.remove('show'), 3000);
+    }
+
+    function openUploadModal() {
+        if(uploadMode === 'paused') { showToast("Submissions Paused by Admin"); return; }
+        document.getElementById('uploadModal').style.display = 'flex';
+    }
+    function closeUploadModal() { document.getElementById('uploadModal').style.display = 'none'; }
+    function checkCloseUpload(e) { if(e.target.id === 'uploadModal') closeUploadModal(); }
+
+    function checkCustomCatUser() {
+        const select = document.getElementById('up-cat');
+        const input = document.getElementById('up-cat-custom');
+        if(select.value === 'custom') { input.classList.remove('hidden'); input.focus(); } 
+        else { input.classList.add('hidden'); }
+    }
+
+    function submitApp() {
+        const name = document.getElementById('up-name').value;
+        const desc = document.getElementById('up-desc').value;
+        let cat = document.getElementById('up-cat').value;
+        if(cat === 'custom') cat = document.getElementById('up-cat-custom').value.trim();
+        const logo = document.getElementById('up-logo').value;
+        const link = document.getElementById('up-link').value;
+        const ver = document.getElementById('up-ver').value || 'v1.0';
+
+        if(!name || !link || !logo || !cat) return showToast("Please fill all required fields");
+
+        db.ref('pending_apps').push({
+            name: name, description: desc, category: cat, logo: logo, link: link, version: ver,
+            uploader: myUsername, submittedAt: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            showToast("App Submitted Successfully!"); 
+            closeUploadModal();
+            document.getElementById('up-name').value = '';
+            document.getElementById('up-desc').value = '';
+            document.getElementById('up-logo').value = '';
+            document.getElementById('up-link').value = '';
+            document.getElementById('up-cat').value = 'Movies';
+            document.getElementById('up-cat-custom').classList.add('hidden');
+        });
+    }
+
+    function openModal(key) {
+        currentAppKey = key; const app = allApps[key]; if(!app) return;
+        document.getElementById('m-title').innerText = app.name;
+        document.getElementById('m-cat').innerText = app.category;
+        document.getElementById('m-img').src = app.logo;
+        document.getElementById('m-version').innerText = app.version || "v1.0";
+        document.getElementById('m-downloads').innerText = formatCount(app.downloads || 0);
+        document.getElementById('m-likes').innerText = app.likes || 0;
+        const descEl = document.getElementById('m-desc');
+        if(app.description && app.description.trim() !== "") { descEl.innerText = app.description; descEl.classList.remove('hidden'); } else { descEl.classList.add('hidden'); }
+        const liked = localStorage.getItem('liked_' + key);
+        const icon = document.getElementById('like-icon');
+        if(liked) { icon.classList.remove('far'); icon.classList.add('fas', 'liked-active'); document.getElementById('like-box').style.color = "#ff7675"; }
+        else { icon.classList.remove('fas', 'liked-active'); icon.classList.add('far'); document.getElementById('like-box').style.color = "var(--text-main)"; }
+        currentLink = app.link; countAds = 0; downloadCountedInSession = false; updateProgress();
+        document.getElementById('appModal').style.display = 'flex';
+    }
+
+    function toggleLike() {
+        if(!currentAppKey || localStorage.getItem('liked_' + currentAppKey)) return;
+        localStorage.setItem('liked_' + currentAppKey, 'true');
+        document.getElementById('like-icon').classList.replace('far', 'fas');
+        document.getElementById('like-icon').classList.add('liked-active');
+        document.getElementById('like-box').style.color = "#ff7675";
+        db.ref(`apps/${currentAppKey}/likes`).transaction(v => (v || 0) + 1);
+    }
+
+    function closeModal() { document.getElementById('appModal').style.display = 'none'; }
+    function checkClose(e) { if(e.target.id === 'appModal') closeModal(); }
+    function updateProgress() {
+        const left = reqAds - countAds;
+        document.getElementById('ads-text').innerText = left > 0 ? `Watch ${left} ${left>1?'Ads':'Ad'} to unlock App` : "Download Unlocked!";
+        document.getElementById('progress-bar').style.width = `${(countAds / reqAds) * 100}%`;
+        if(countAds >= reqAds) { document.getElementById('btn-watch').classList.add('hidden'); document.getElementById('btn-install').classList.remove('hidden'); document.getElementById('btn-install').href = currentLink; } 
+        else { document.getElementById('btn-watch').classList.remove('hidden'); document.getElementById('btn-install').classList.add('hidden'); }
+    }
+    function watchAd() {
+        if(!adZoneId) { countAds++; updateProgress(); return; }
+        db.ref('stats/total/ads').transaction(v => (v || 0) + 1);
+        db.ref(`stats/daily/${today}/ads`).transaction(v => (v || 0) + 1);
+        const fnName = 'show_' + adZoneId;
+        if(typeof window[fnName] === 'function') { window[fnName]().then(() => { countAds++; updateProgress(); }); } 
+        else { countAds++; updateProgress(); }
+    }
+    function trackDownload() {
+        if(downloadCountedInSession) return; downloadCountedInSession = true;
+        db.ref('stats/total/downloads').transaction(v => (v || 0) + 1);
+        db.ref(`stats/daily/${today}/downloads`).transaction(v => (v || 0) + 1);
+        if(currentAppKey) db.ref(`apps/${currentAppKey}/downloads`).transaction(v => (v || 0) + 1);
+    }
+    function formatCount(n) { return n >= 1000 ? (n/1000).toFixed(1) + 'k' : n; }
+
+    function openCommModal() { document.getElementById('commModal').style.display = 'flex'; loadCommunity(); }
+    function closeCommModal() { document.getElementById('commModal').style.display = 'none'; document.getElementById('emoji-list').classList.add('hidden'); }
+    function checkCloseComm(e) { if(e.target.id === 'commModal') closeCommModal(); }
+    function sendMsg() {
+        if(commMode !== 'active') return showToast("Chat disabled");
+        const txt = document.getElementById('comm-input').value.trim();
+        if(!txt) return;
+        db.ref('community').push({ text: txt, username: myUsername, timestamp: firebase.database.ServerValue.TIMESTAMP, reactions: {} });
+        document.getElementById('comm-input').value = "";
+    }
+    
+    function getAvatarColor(name) {
+        const colors = ['#e17055', '#0984e3', '#00b894', '#6c5ce7', '#fdcb6e', '#d63031', '#00cec9', '#e84393'];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        return colors[Math.abs(hash) % colors.length];
+    }
+
+    function loadCommunity() {
+        const feed = document.getElementById('comm-feed');
+        // This sets up the real-time listener for the community chat
+        db.ref('community').limitToLast(50).on('value', snap => {
+            const data = snap.val();
+            if(!data) { if(feed.innerHTML.includes('Loading')) feed.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-sub);">No messages yet. Be the first!</div>'; return; }
+            const msgs = Object.entries(data).sort((a,b) => a[1].timestamp - b[1].timestamp);
+            if(feed.innerHTML.includes('Loading')) feed.innerHTML = "";
+            
+            msgs.forEach(([key, msg]) => {
+                const liked = msg.reactions && msg.reactions[getDeviceId()];
+                const count = msg.reactions ? Object.keys(msg.reactions).length : 0;
+                const date = new Date(msg.timestamp);
+                const timeStr = date.getHours() + ":" + date.getMinutes().toString().padStart(2,'0');
+                const msgId = 'msg-' + key;
+                const firstLetter = (msg.username || "A").charAt(0).toUpperCase();
+                const avatarColor = getAvatarColor(msg.username || "Anon");
+
+                let div = document.getElementById(msgId);
+                
+                if(div) {
+                    const btn = div.querySelector('.comm-action-btn');
+                    if(btn) { btn.className = `comm-action-btn ${liked?'active':''}`; btn.innerHTML = `<i class="${liked?'fas':'far'} fa-heart"></i> ${count}`; }
+                    let replyBox = div.querySelector('.comm-admin-reply');
+                    if (msg.adminReply) {
+                        if (!replyBox) {
+                            replyBox = document.createElement('div'); replyBox.className = 'comm-admin-reply';
+                            replyBox.innerHTML = `<div class="comm-admin-title"><i class="fas fa-crown"></i> Admin</div><div class="comm-admin-text">${msg.adminReply}</div>`;
+                            div.insertBefore(replyBox, div.querySelector('.comm-actions'));
+                        } else { replyBox.querySelector('.comm-admin-text').innerText = msg.adminReply; }
+                    }
+                } else {
+                    div = document.createElement('div'); div.className = 'comm-msg'; div.id = msgId;
+                    div.innerHTML = `
+                        <div class="comm-header">
+                            <div class="comm-avatar" style="background:${avatarColor}">${firstLetter}</div>
+                            <div>
+                                <div class="comm-user">${msg.username}</div>
+                                <span class="comm-time">${timeStr}</span>
+                            </div>
+                        </div>
+                        <div class="comm-text">${msg.text}</div>
+                        ${msg.adminReply ? `<div class="comm-admin-reply"><div class="comm-admin-title"><i class="fas fa-crown"></i> Admin</div><div class="comm-admin-text">${msg.adminReply}</div></div>` : ''}
+                        <div class="comm-actions">
+                            <button class="comm-action-btn ${liked?'active':''}" onclick="reactMsg('${key}')"><i class="${liked?'fas':'far'} fa-heart"></i> ${count}</button>
+                        </div>`;
+                    feed.appendChild(div); 
+                    feed.scrollTop = feed.scrollHeight;
+                }
+            });
+            
+            const keysInDb = Object.keys(data);
+            feed.querySelectorAll('.comm-msg').forEach(el => { if(!keysInDb.includes(el.id.replace('msg-', ''))) el.remove(); });
+        });
+    }
+    function getDeviceId() { let id = localStorage.getItem('device_id'); if(!id) { id = Math.random().toString(36).substr(2, 9); localStorage.setItem('device_id', id); } return id; }
+    function reactMsg(key) { const id = getDeviceId(); db.ref(`community/${key}/reactions/${id}`).transaction(curr => curr ? null : true); }
+    function toggleEmoji() { document.getElementById('emoji-list').classList.toggle('hidden'); }
+    function addEmoji(emoji) { const input = document.getElementById('comm-input'); input.value += emoji; input.focus(); document.getElementById('emoji-list').classList.add('hidden'); }
+</script>
+</body>
+</html>
